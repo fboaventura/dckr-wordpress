@@ -1,6 +1,16 @@
 #!/bin/bash
 set -euo pipefail
 
+export FQDN
+export DOMAIN
+export CAFILE
+export CERTFILE
+export KEYFILE
+export FULLCHAIN
+
+FQDN=${FQDN:-$(hostname --fqdn)}
+DOMAIN=${DOMAIN:-$(hostname --domain)}
+
 # usage: file_env VAR [DEFAULT]
 #    ie: file_env 'XYZ_DB_PASSWORD' 'example'
 # (will allow for "$XYZ_DB_PASSWORD_FILE" to fill in the value of
@@ -215,5 +225,74 @@ EOPHP
 		unset "$e"
 	done
 fi
+
+# SSL CERTIFICATES
+# ---------------------------------------------------------------------------------------------
+
+LETS_ENCRYPT_LIVE_PATH=/etc/letsencrypt/live/"$FQDN"
+
+if [ -d "$LETS_ENCRYPT_LIVE_PATH" ]; then
+
+  echo "[INFO] Let's encrypt live directory found"
+  echo "[INFO] Using $LETS_ENCRYPT_LIVE_PATH folder"
+
+  FULLCHAIN="$LETS_ENCRYPT_LIVE_PATH"/fullchain.pem
+  CAFILE="$LETS_ENCRYPT_LIVE_PATH"/chain.pem
+  CERTFILE="$LETS_ENCRYPT_LIVE_PATH"/cert.pem
+  KEYFILE="$LETS_ENCRYPT_LIVE_PATH"/privkey.pem
+
+  # When using https://github.com/jwilder/nginx-proxy there is only key.pem
+  # and fullchain.pem so we look for key.pem and extract cert.pem and chain.pem
+  if [ ! -e "$KEYFILE" ]; then
+    KEYFILE="$LETS_ENCRYPT_LIVE_PATH"/key.pem
+  fi
+
+  if [ ! -e "$KEYFILE" ]; then
+    echo "[ERROR] No keyfile found in $LETS_ENCRYPT_LIVE_PATH !"
+    exit 1
+  fi
+
+  if [ ! -e "$CAFILE" ] || [ ! -e "$CERTFILE" ]; then
+    if [ ! -e "$FULLCHAIN" ]; then
+      echo "[ERROR] No fullchain found in $LETS_ENCRYPT_LIVE_PATH !"
+      exit 1
+    fi
+
+    awk -v path="$LETS_ENCRYPT_LIVE_PATH" 'BEGIN {c=0;} /BEGIN CERT/{c++} { print > path"/cert" c ".pem"}' < "$FULLCHAIN"
+    mv "$LETS_ENCRYPT_LIVE_PATH"/cert1.pem "$CERTFILE"
+    mv "$LETS_ENCRYPT_LIVE_PATH"/cert2.pem "$CAFILE"
+  fi
+
+else
+
+  echo "[INFO] No Let's encrypt live directory found"
+  echo "[INFO] Using /var/mail/ssl/selfsigned/ folder"
+
+  FULLCHAIN=/var/mail/ssl/selfsigned/cert.pem
+  CAFILE=
+  CERTFILE=/var/mail/ssl/selfsigned/cert.pem
+  KEYFILE=/var/mail/ssl/selfsigned/privkey.pem
+
+  if [ ! -e "$CERTFILE" ] || [ ! -e "$KEYFILE" ]; then
+    echo "[INFO] No SSL certificates found, generating a new selfsigned certificate"
+    mkdir -p /var/mail/ssl/selfsigned/
+    openssl req -new -newkey rsa:4096 -days 3658 -sha256 -nodes -x509 \
+      -subj "/C=FR/ST=France/L=Paris/O=Mailserver certificate/OU=Mail/CN=*.${DOMAIN}/emailAddress=postmaster@${DOMAIN}" \
+      -keyout "$KEYFILE" \
+      -out "$CERTFILE"
+  fi
+fi
+
+# DIFFIE-HELLMAN PARAMETERS
+# ---------------------------------------------------------------------------------------------
+
+if [ ! -e /var/mail/ssl/dhparams/dh2048.pem ] || [ ! -e /var/mail/ssl/dhparams/dh512.pem ]; then
+  echo "[INFO] Diffie-Hellman parameters not found, generating new DH params"
+  mkdir -p /var/mail/ssl/dhparams/
+  openssl dhparam -out /var/mail/ssl/dhparams/dh2048.pem 2048
+  openssl dhparam -out /var/mail/ssl/dhparams/dh512.pem 512
+fi
+
+sed -i "s@/etc/ssl/certs/ssl-cert-snakeoil.pem@${FULLCHAIN}@g;s@/etc/ssl/private/ssl-cert-snakeoil.key@${KEYFILE}@g" /etc/apache2/sites-available/default-ssl.conf
 
 exec "$@"

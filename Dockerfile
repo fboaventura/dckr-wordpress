@@ -7,6 +7,7 @@ RUN set -ex; \
 	apt-get install -y \
 		libjpeg-dev \
 		libpng-dev \
+        net-tools \
 	; \
 	rm -rf /var/lib/apt/lists/*; \
 	\
@@ -25,7 +26,8 @@ RUN { \
 		echo 'opcache.enable_cli=1'; \
 	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
-RUN a2enmod rewrite expires headers remoteip alias deflate 
+RUN a2enmod rewrite expires headers remoteip alias deflate ssl \
+    && a2ensite default-ssl.conf
 
 VOLUME /var/www/html
 
