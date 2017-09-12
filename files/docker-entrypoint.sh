@@ -293,6 +293,8 @@ if [ ! -e /var/mail/ssl/dhparams/dh2048.pem ] || [ ! -e /var/mail/ssl/dhparams/d
   openssl dhparam -out /var/mail/ssl/dhparams/dh512.pem 512
 fi
 
-sed -i "s@/etc/ssl/certs/ssl-cert-snakeoil.pem@${FULLCHAIN}@g;s@/etc/ssl/private/ssl-cert-snakeoil.key@${KEYFILE}@g" /etc/apache2/sites-available/default-ssl.conf
+#sed -i "s@/etc/ssl/certs/ssl-cert-snakeoil.pem@${FULLCHAIN}@g;s@/etc/ssl/private/ssl-cert-snakeoil.key@${KEYFILE}@g" /etc/apache2/sites-available/default-ssl.conf
+
+/usr/local/sbin/php-fpm -D
 
 exec "$@"

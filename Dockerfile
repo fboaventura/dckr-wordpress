@@ -1,4 +1,4 @@
-FROM php:7.1-apache
+FROM php:7.1-fpm
 
 # install the PHP extensions we need
 RUN set -ex; \
@@ -26,10 +26,12 @@ RUN { \
 		echo 'opcache.enable_cli=1'; \
 	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
-RUN a2enmod rewrite expires headers remoteip alias deflate ssl \
-    && a2ensite default-ssl.conf
+RUN mkdir -p /app/ssl /app/www /app/conf
 
-VOLUME /var/www/html
+VOLUME /app/www /app/conf /app/ssl
+
+COPY files/caddy /app/caddy
+COPY files/Caddyfile /app/conf
 
 ENV WORDPRESS_VERSION 4.8.1
 ENV WORDPRESS_SHA1 5376cf41403ae26d51ca55c32666ef68b10e35a4
@@ -45,4 +47,4 @@ RUN set -ex; \
 COPY files/docker-entrypoint.sh /usr/local/bin/
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["apache2-foreground"]
+CMD /app/caddy -agree -log=stdout -conf=/app/conf/Caddyfile -root=/app/www
