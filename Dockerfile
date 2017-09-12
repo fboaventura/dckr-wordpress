@@ -44,7 +44,10 @@ RUN set -ex; \
 	rm wordpress.tar.gz; \
 	chown -R www-data:www-data /usr/src/wordpress
 
+ENV DOMAIN example.com
+ENV EMAIL admin@${DOMAIN}
+
 COPY files/docker-entrypoint.sh /usr/local/bin/
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD /app/caddy -agree -log=stdout -conf=/app/conf/Caddyfile -root=/app/www
+CMD /app/caddy -agree -log=stdout -conf=/app/conf/Caddyfile -root=/app/www -email=${EMAIL}
