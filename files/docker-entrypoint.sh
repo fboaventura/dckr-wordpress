@@ -229,7 +229,7 @@ fi
 # SSL CERTIFICATES
 # ---------------------------------------------------------------------------------------------
 
-LETS_ENCRYPT_LIVE_PATH=/etc/letsencrypt/live/"$FQDN"
+LETS_ENCRYPT_LIVE_PATH=/app/.caddy/live/"$FQDN"
 
 if [ -d "$LETS_ENCRYPT_LIVE_PATH" ]; then
 
