@@ -1,6 +1,4 @@
 ${DOMAIN} {
-    redir https://${DOMAIN}{uri}
-
     root /app/www
     errors /proc/self/fd/2
     log /proc/self/fd/1 combined
