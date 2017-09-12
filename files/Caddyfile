@@ -1,8 +1,6 @@
 ${DOMAIN} {
     redir https://${DOMAIN}{uri}
-}
 
-${DOMAIN} {
     root /app/www
     errors /proc/self/fd/2
     log /proc/self/fd/1 combined
@@ -14,7 +12,7 @@ ${DOMAIN} {
     fastcgi / 127.0.0.1:9000 php
 
     # Routing for WordPress
-    rewrite /{
+    rewrite / {
         to {path} {path}/ /index.php?{query}
     }
 }
