@@ -10,7 +10,8 @@
     fastcgi / 127.0.0.1:9000 php
 
     # TLS especification
-    tls /app/ssl/live/{$FQDN}/fullchain.pem /app/ssl/live/{$FQDN}/privkey.pem
+    # tls /app/ssl/live/{$FQDN}/fullchain.pem /app/ssl/live/{$FQDN}/privkey.pem
+    tls self_signed
 
     # Routing for WordPress
     rewrite / {
