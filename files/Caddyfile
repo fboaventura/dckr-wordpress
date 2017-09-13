@@ -3,6 +3,25 @@
     errors /proc/self/fd/2
     log /proc/self/fd/1 combined
 
+    # Enable gzip compression and minify
+    gzip
+    minify
+
+    # Setup cache control
+    header / {
+        Cache-Control "max-age=86400"
+    }
+
+    mime {
+        .jpg  image/jpeg
+        .png  image/png
+        .pdf  application/pdf
+        .js   application/javascript
+        .css  text/css
+        .htm  text/html
+        .html text/html
+    }
+
     # PHP-FPM with Unix socket
     # fastcgi / /var/run/php7-fpm.sock php
     
