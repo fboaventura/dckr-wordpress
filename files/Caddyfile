@@ -4,12 +4,12 @@
     log /proc/self/fd/1 combined
 
     # Enable gzip compression and minify
-    gzip 
+    gzip
     minify
 
     # Setup cache control
-    header / Cache-Control "max-age=86400"
-    header /wp-content/ Cache-Control "max-age=7200"
+    #header / Cache-Control "max-age=86400"
+    #header /wp-content/ Cache-Control "max-age=7200"
 
     header /wp-admin {
         Cache-Control no-cache
