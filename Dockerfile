@@ -2,13 +2,15 @@ FROM php:7.1-apache
 
 # install the PHP extensions we need
 RUN set -ex; \
-	\
 	apt-get update; \
 	apt-get install -y \
 		libjpeg-dev \
 		libpng-dev \
         net-tools \
 	; \
+	wget https://dl-ssl.google.com/dl/linux/direct/mod-pagespeed-stable_current_amd64.deb -O /tmp/mod_pagespeed.deb; \
+    dpkg -i /tmp/mod_pagespeed.deb; \
+    apt-get -f install; \
 	rm -rf /var/lib/apt/lists/*; \
 	\
 	docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr; \
@@ -26,7 +28,7 @@ RUN { \
 		echo 'opcache.enable_cli=1'; \
 	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
-RUN a2enmod rewrite expires headers remoteip alias deflate ssl \
+RUN a2enmod rewrite expires headers remoteip alias deflate ssl pagespeed \
     && a2ensite default-ssl.conf
 
 VOLUME /var/www/html
