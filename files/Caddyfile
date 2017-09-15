@@ -4,7 +4,7 @@
     log /proc/self/fd/1 combined
 
     # Enable gzip compression and minify
-    gzip
+    gzip 
     minify
 
     # Setup cache control
