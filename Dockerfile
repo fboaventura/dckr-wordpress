@@ -8,7 +8,7 @@ RUN set -ex; \
 		libpng-dev \
         net-tools \
 	; \
-	wget https://dl-ssl.google.com/dl/linux/direct/mod-pagespeed-stable_current_amd64.deb -O /tmp/mod_pagespeed.deb; \
+	curl -o /tmp/mod_pagespeed.deb https://dl-ssl.google.com/dl/linux/direct/mod-pagespeed-stable_current_amd64.deb; \
     dpkg -i /tmp/mod_pagespeed.deb; \
     apt-get -f install; \
 	rm -rf /var/lib/apt/lists/*; \
