@@ -8,12 +8,19 @@
     minify
 
     # Setup cache control
-    header / {
-        Cache-Control "max-age=86400"
-    }
+    header / Cache-Control "max-age=86400"
+    header /wp-content/ Cache-Control "max-age=7200"
 
     header /wp-admin {
         Cache-Control no-cache
+    }
+
+    cache {
+        match_path /wp-content
+        match_header Content-Type image/jpg image/png text/css
+        status_header X-Cache-Status
+        default_max_age 2h
+        path /tmp/caddy-cache
     }
 
     mime {
@@ -28,7 +35,7 @@
 
     # PHP-FPM with Unix socket
     # fastcgi / /var/run/php7-fpm.sock php
-    
+
     # PHP-FPM with regular udp socket
     fastcgi / 127.0.0.1:9000 php
 
@@ -41,3 +48,4 @@
         to {path} {path}/ /index.php?{query}
     }
 }
+

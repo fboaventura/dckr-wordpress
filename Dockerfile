@@ -30,6 +30,7 @@ RUN mkdir -p /app/ssl /app/www /app/conf
 
 VOLUME /app/www /app/conf /app/ssl
 
+COPY files/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
 COPY files/caddy /app/caddy
 COPY files/Caddyfile /app/conf
 
