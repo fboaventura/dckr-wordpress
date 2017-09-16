@@ -6,15 +6,16 @@ RUN set -ex; \
 	apt-get install -y \
 		libjpeg-dev \
 		libpng-dev \
-        net-tools \
+		net-tools \
 	; \
 	curl -o /tmp/mod_pagespeed.deb https://dl-ssl.google.com/dl/linux/direct/mod-pagespeed-stable_current_amd64.deb; \
-    dpkg -i /tmp/mod_pagespeed.deb; \
-    apt-get -f install; \
+	dpkg -i /tmp/mod_pagespeed.deb; \
+	apt-get -f install; \
 	rm -rf /var/lib/apt/lists/*; \
 	\
 	docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr; \
 	docker-php-ext-install gd mysqli opcache
+
 # TODO consider removing the *-dev deps and only keeping the necessary lib* packages
 
 # set recommended PHP.ini settings
@@ -28,8 +29,10 @@ RUN { \
 		echo 'opcache.enable_cli=1'; \
 	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
+COPY files/pagespeed.conf /etc/apache/mods-available/pagespeed.conf
+
 RUN a2enmod rewrite expires headers remoteip alias deflate ssl pagespeed \
-    && a2ensite default-ssl.conf
+	&& a2ensite default-ssl.conf
 
 VOLUME /var/www/html
 
@@ -39,7 +42,7 @@ ENV WORDPRESS_SHA1 5376cf41403ae26d51ca55c32666ef68b10e35a4
 RUN set -ex; \
 	curl -o wordpress.tar.gz -fSL "https://wordpress.org/wordpress-${WORDPRESS_VERSION}.tar.gz"; \
 	echo "$WORDPRESS_SHA1 *wordpress.tar.gz" | sha1sum -c -; \
-# upstream tarballs include ./wordpress/ so this gives us /usr/src/wordpress
+	# upstream tarballs include ./wordpress/ so this gives us /usr/src/wordpress
 	tar -xzf wordpress.tar.gz -C /usr/src/; \
 	rm wordpress.tar.gz; \
 	chown -R www-data:www-data /usr/src/wordpress
